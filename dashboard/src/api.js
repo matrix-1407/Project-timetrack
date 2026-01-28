@@ -25,7 +25,16 @@ export function formatTime(seconds) {
  */
 export async function fetchAnalytics(deviceId, days = 7) {
   try {
-    const response = await fetch(`${API_BASE_URL}/analytics/${deviceId}?days=${days}`);
+    const timestamp = Date.now();
+    const response = await fetch(`${API_BASE_URL}/analytics/${deviceId}?days=${days}&_t=${timestamp}`, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
+      cache: 'no-store'
+    });
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
@@ -43,7 +52,16 @@ export async function fetchAnalytics(deviceId, days = 7) {
  */
 export async function fetchSessions(deviceId, limit = 50, days = 7) {
   try {
-    const response = await fetch(`${API_BASE_URL}/sessions/${deviceId}?limit=${limit}&days=${days}`);
+    const timestamp = Date.now();
+    const response = await fetch(`${API_BASE_URL}/sessions/${deviceId}?limit=${limit}&days=${days}&_t=${timestamp}`, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
+      cache: 'no-store'
+    });
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
