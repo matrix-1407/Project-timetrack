@@ -45,17 +45,174 @@ function generateSessionId() {
   return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 
+// ============================================
+// Smart Domain Categorization System
+// ============================================
+
+// Extensive lists of known domains
+const PRODUCTIVE_DOMAINS = [
+  // Development & Programming
+  'github.com', 'gitlab.com', 'bitbucket.org', 'stackoverflow.com', 'stackexchange.com',
+  'developer.mozilla.org', 'w3schools.com', 'freecodecamp.org', 'codecademy.com',
+  'codepen.io', 'jsfiddle.net', 'replit.com', 'codesandbox.io', 'glitch.com',
+  'npmjs.com', 'pypi.org', 'crates.io', 'rubygems.org', 'packagist.org',
+  'docker.com', 'kubernetes.io', 'aws.amazon.com', 'cloud.google.com', 'azure.microsoft.com',
+  'vercel.com', 'netlify.com', 'heroku.com', 'digitalocean.com', 'linode.com',
+  
+  // Documentation & Learning
+  'docs.google.com', 'notion.so', 'confluence.atlassian.com', 'gitbook.io',
+  'readthedocs.io', 'devdocs.io', 'dash.plotly.com',
+  'coursera.org', 'udemy.com', 'edx.org', 'pluralsight.com', 'skillshare.com',
+  'lynda.com', 'treehouse.com', 'egghead.io', 'frontendmasters.com',
+  'khanacademy.org', 'brilliant.org', 'duolingo.com', 'memrise.com',
+  
+  // Professional & Productivity
+  'linkedin.com', 'glassdoor.com', 'indeed.com', 'angel.co', 'wellfound.com',
+  'trello.com', 'asana.com', 'monday.com', 'basecamp.com', 'clickup.com',
+  'slack.com', 'teams.microsoft.com', 'zoom.us', 'meet.google.com',
+  'calendar.google.com', 'outlook.com', 'mail.google.com',
+  'drive.google.com', 'dropbox.com', 'box.com', 'onedrive.live.com',
+  'sheets.google.com', 'airtable.com', 'smartsheet.com',
+  'figma.com', 'sketch.com', 'canva.com', 'adobe.com', 'invisionapp.com',
+  'miro.com', 'lucidchart.com', 'draw.io', 'whimsical.com',
+  
+  // Research & Information
+  'wikipedia.org', 'arxiv.org', 'scholar.google.com', 'researchgate.net',
+  'medium.com', 'dev.to', 'hashnode.com', 'hackernoon.com',
+  'news.ycombinator.com', 'lobste.rs', 'slashdot.org',
+  'techcrunch.com', 'wired.com', 'arstechnica.com', 'theverge.com',
+  
+  // Finance & Business
+  'bloomberg.com', 'reuters.com', 'wsj.com', 'ft.com',
+  'quickbooks.intuit.com', 'xero.com', 'freshbooks.com',
+  'stripe.com', 'paypal.com', 'square.com',
+  
+  // AI & Tools
+  'chat.openai.com', 'claude.ai', 'bard.google.com', 'copilot.microsoft.com',
+  'huggingface.co', 'kaggle.com', 'jupyter.org',
+  'grammarly.com', 'hemingwayapp.com'
+];
+
+const UNPRODUCTIVE_DOMAINS = [
+  // Social Media
+  'facebook.com', 'instagram.com', 'twitter.com', 'x.com', 'tiktok.com',
+  'snapchat.com', 'pinterest.com', 'tumblr.com', 'weibo.com',
+  'vk.com', 'ok.ru', 'myspace.com',
+  
+  // Entertainment & Streaming
+  'youtube.com', 'netflix.com', 'hulu.com', 'disneyplus.com', 'hbomax.com',
+  'primevideo.com', 'peacocktv.com', 'paramountplus.com', 'crunchyroll.com',
+  'twitch.tv', 'kick.com', 'dailymotion.com', 'vimeo.com',
+  'spotify.com', 'soundcloud.com', 'pandora.com', 'deezer.com',
+  
+  // Gaming
+  'store.steampowered.com', 'epicgames.com', 'gog.com', 'origin.com',
+  'battle.net', 'roblox.com', 'minecraft.net', 'ea.com',
+  'ign.com', 'gamespot.com', 'kotaku.com', 'polygon.com',
+  'chess.com', 'lichess.org',
+  
+  // Forums & Communities (entertainment-focused)
+  'reddit.com', '9gag.com', 'imgur.com', 'buzzfeed.com',
+  'boredpanda.com', 'digg.com', 'fark.com',
+  
+  // News & Gossip (non-business)
+  'tmz.com', 'eonline.com', 'people.com', 'usmagazine.com',
+  'dailymail.co.uk', 'thesun.co.uk',
+  
+  // Dating
+  'tinder.com', 'bumble.com', 'hinge.com', 'match.com', 'okcupid.com',
+  
+  // Shopping (non-essential)
+  'amazon.com', 'ebay.com', 'aliexpress.com', 'wish.com', 'etsy.com',
+  'walmart.com', 'target.com', 'bestbuy.com'
+];
+
+// Keywords that suggest productivity
+const PRODUCTIVE_KEYWORDS = [
+  'docs', 'documentation', 'api', 'learn', 'tutorial', 'course', 'education',
+  'developer', 'development', 'programming', 'code', 'coding', 'software',
+  'research', 'study', 'academic', 'university', 'college', 'school',
+  'work', 'business', 'professional', 'enterprise', 'corporate',
+  'productivity', 'tool', 'dashboard', 'analytics', 'admin', 'console',
+  'project', 'manage', 'organize', 'collaborate', 'team'
+];
+
+// Keywords that suggest unproductivity
+const UNPRODUCTIVE_KEYWORDS = [
+  'game', 'gaming', 'play', 'stream', 'watch', 'video', 'movie', 'tv',
+  'social', 'chat', 'meme', 'funny', 'entertainment', 'fun',
+  'gossip', 'celebrity', 'dating', 'shop', 'deal', 'discount',
+  'porn', 'xxx', 'adult', 'casino', 'gambling', 'bet'
+];
+
+// TLDs that hint at productivity
+const PRODUCTIVE_TLDS = ['.edu', '.gov', '.org', '.ac.', '.edu.'];
+const UNPRODUCTIVE_TLDS = ['.xxx', '.adult'];
+
+// User custom categories (loaded from storage)
+let userCategories = { productive: [], unproductive: [] };
+
+// Load user categories from storage
+async function loadUserCategories() {
+  try {
+    const result = await chrome.storage.local.get(['userCategories']);
+    if (result.userCategories) {
+      userCategories = result.userCategories;
+    }
+  } catch (e) {
+    console.log('No custom categories found');
+  }
+}
+
+// Save user category
+async function saveUserCategory(domain, category) {
+  if (category === 'productive') {
+    if (!userCategories.productive.includes(domain)) {
+      userCategories.productive.push(domain);
+      userCategories.unproductive = userCategories.unproductive.filter(d => d !== domain);
+    }
+  } else if (category === 'unproductive') {
+    if (!userCategories.unproductive.includes(domain)) {
+      userCategories.unproductive.push(domain);
+      userCategories.productive = userCategories.productive.filter(d => d !== domain);
+    }
+  }
+  await chrome.storage.local.set({ userCategories });
+}
+
 /**
- * Categorize domain (basic categorization)
+ * Smart domain categorization with multiple heuristics
  */
 function categorizeDomain(domain) {
-  const productive = ['github.com', 'stackoverflow.com', 'docs.google.com', 'linkedin.com', 'medium.com'];
-  const unproductive = ['youtube.com', 'facebook.com', 'twitter.com', 'instagram.com', 'reddit.com', 'netflix.com'];
+  const lowerDomain = domain.toLowerCase();
   
-  if (productive.some(d => domain.includes(d))) return 'productive';
-  if (unproductive.some(d => domain.includes(d))) return 'unproductive';
+  // 1. Check user custom categories first (highest priority)
+  if (userCategories.productive.some(d => lowerDomain.includes(d))) return 'productive';
+  if (userCategories.unproductive.some(d => lowerDomain.includes(d))) return 'unproductive';
+  
+  // 2. Check against known domain lists
+  if (PRODUCTIVE_DOMAINS.some(d => lowerDomain.includes(d))) return 'productive';
+  if (UNPRODUCTIVE_DOMAINS.some(d => lowerDomain.includes(d))) return 'unproductive';
+  
+  // 3. Check TLDs
+  if (PRODUCTIVE_TLDS.some(tld => lowerDomain.includes(tld))) return 'productive';
+  if (UNPRODUCTIVE_TLDS.some(tld => lowerDomain.includes(tld))) return 'unproductive';
+  
+  // 4. Keyword analysis in domain
+  const domainParts = lowerDomain.replace(/[.-]/g, ' ');
+  
+  const productiveScore = PRODUCTIVE_KEYWORDS.filter(kw => domainParts.includes(kw)).length;
+  const unproductiveScore = UNPRODUCTIVE_KEYWORDS.filter(kw => domainParts.includes(kw)).length;
+  
+  if (productiveScore > unproductiveScore && productiveScore > 0) return 'productive';
+  if (unproductiveScore > productiveScore && unproductiveScore > 0) return 'unproductive';
+  
+  // 5. Default to neutral
   return 'neutral';
 }
+
+// Load user categories on startup
+loadUserCategories();
 
 // ============================================
 // Session Management
@@ -421,6 +578,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     currentSession = null;
     chrome.storage.local.set({ sessions: [] }).then(() => {
       sendResponse({ success: true });
+    });
+    return true;
+  }
+  
+  if (request.action === 'setCategory') {
+    // Allow user to set custom category for a domain
+    saveUserCategory(request.domain, request.category).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+  
+  if (request.action === 'getCategories') {
+    // Return current categories for display
+    sendResponse({
+      userCategories: userCategories,
+      productiveCount: PRODUCTIVE_DOMAINS.length + userCategories.productive.length,
+      unproductiveCount: UNPRODUCTIVE_DOMAINS.length + userCategories.unproductive.length
     });
     return true;
   }

@@ -32,6 +32,12 @@ router.post('/batch', async (req, res) => {
 
     const connection = await pool.getConnection();
 
+    // Auto-register device if it doesn't exist
+    await connection.query(
+      `INSERT IGNORE INTO devices (id, created_at) VALUES (?, NOW())`,
+      [deviceId]
+    );
+
     for (const session of sessions) {
       const sessionId = uuidv4();
       await connection.query(

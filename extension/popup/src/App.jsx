@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Clock, Globe, Activity, Trash2, ExternalLink, 
   Loader2, AlertCircle, CheckCircle, XCircle, Minus,
-  Zap, TrendingUp
+  Zap, TrendingUp, Edit3, ChevronDown
 } from 'lucide-react';
 
 // Animation variants
@@ -33,9 +33,10 @@ function App() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingDomain, setEditingDomain] = useState(null);
 
   // Fetch stats from background script
-  useEffect(() => {
+  const fetchStats = () => {
     try {
       chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
         if (chrome.runtime.lastError) {
@@ -55,6 +56,10 @@ function App() {
       setError(err.message);
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchStats();
   }, []);
 
   // Format seconds to readable time
@@ -82,6 +87,29 @@ function App() {
   // Open dashboard
   const openDashboard = () => {
     chrome.tabs.create({ url: 'http://localhost:3000' });
+  };
+
+  // Change domain category
+  const handleCategoryChange = (domain, newCategory) => {
+    chrome.runtime.sendMessage({ 
+      action: 'setCategory', 
+      domain: domain,
+      category: newCategory 
+    }, (response) => {
+      if (response?.success) {
+        // Update local state immediately
+        setStats(prev => ({
+          ...prev,
+          topDomains: prev.topDomains.map(d => 
+            d.domain === domain ? { ...d, category: newCategory } : d
+          ),
+          currentSession: prev.currentSession?.domain === domain 
+            ? { ...prev.currentSession, category: newCategory }
+            : prev.currentSession
+        }));
+        setEditingDomain(null);
+      }
+    });
   };
 
   // Get category color
@@ -323,12 +351,52 @@ function App() {
                 <div style={styles.domainInfo}>
                   <div style={styles.domainName}>{domain.domain}</div>
                   <div style={styles.domainMeta}>
-                    <span style={{
-                      ...styles.categoryTag,
-                      color: getCategoryColor(domain.category)
-                    }}>
-                      {getCategoryIcon(domain.category)}
-                    </span>
+                    {editingDomain === domain.domain ? (
+                      <div style={styles.categoryDropdown}>
+                        {['productive', 'unproductive', 'neutral'].map(cat => (
+                          <motion.button
+                            key={cat}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCategoryChange(domain.domain, cat);
+                            }}
+                            style={{
+                              ...styles.categoryOption,
+                              background: getCategoryColor(cat),
+                              opacity: domain.category === cat ? 1 : 0.6
+                            }}
+                          >
+                            {cat === 'productive' && <CheckCircle size={10} />}
+                            {cat === 'unproductive' && <XCircle size={10} />}
+                            {cat === 'neutral' && <Minus size={10} />}
+                          </motion.button>
+                        ))}
+                      </div>
+                    ) : (
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingDomain(domain.domain);
+                        }}
+                        style={{
+                          ...styles.categoryTag,
+                          color: getCategoryColor(domain.category),
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}
+                      >
+                        {getCategoryIcon(domain.category)}
+                        <Edit3 size={8} style={{ marginLeft: '2px', opacity: 0.5 }} />
+                      </motion.button>
+                    )}
                     <span>{domain.visits} visits</span>
                   </div>
                 </div>
@@ -678,6 +746,23 @@ const styles = {
     paddingTop: '8px',
     fontWeight: '500',
     flexShrink: 0
+  },
+  categoryDropdown: {
+    display: 'flex',
+    gap: '4px',
+    alignItems: 'center'
+  },
+  categoryOption: {
+    width: '20px',
+    height: '20px',
+    borderRadius: '50%',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    padding: 0
   }
 };
 
