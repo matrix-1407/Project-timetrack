@@ -143,36 +143,45 @@ const styles = {
   container: {
     padding: '16px',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    background: '#f9fafb',
-    minHeight: '500px',
-    width: '350px'
+    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+    height: '550px',
+    width: '380px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column'
   },
   header: {
     textAlign: 'center',
-    marginBottom: '20px'
+    marginBottom: '12px',
+    paddingBottom: '10px',
+    borderBottom: '2px solid #374151'
   },
   title: {
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: 'bold',
     margin: '0 0 4px 0',
-    color: '#111827'
+    color: '#f9fafb',
+    letterSpacing: '-0.5px'
   },
   subtitle: {
-    fontSize: '12px',
-    color: '#6b7280',
-    margin: 0
+    fontSize: '11px',
+    color: '#9ca3af',
+    margin: 0,
+    fontWeight: '500'
   },
   loading: {
     textAlign: 'center',
-    padding: '40px',
-    color: '#6b7280'
+    padding: '60px 20px',
+    color: '#9ca3af',
+    fontSize: '14px'
   },
   card: {
-    background: 'white',
+    background: '#374151',
     borderRadius: '12px',
-    padding: '16px',
-    marginBottom: '16px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    padding: '14px',
+    marginBottom: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    border: '1px solid #4b5563'
   },
   cardHeader: {
     display: 'flex',
@@ -180,97 +189,111 @@ const styles = {
     marginBottom: '8px'
   },
   statusDot: {
-    width: '8px',
-    height: '8px',
+    width: '10px',
+    height: '10px',
     borderRadius: '50%',
     background: '#10b981',
     marginRight: '8px',
-    animation: 'pulse 2s infinite'
+    animation: 'pulse 2s infinite',
+    boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.3)'
   },
   cardTitle: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#6b7280',
+    fontSize: '10px',
+    fontWeight: '700',
+    color: '#9ca3af',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.8px'
   },
   currentDomain: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#f9fafb',
     marginBottom: '8px',
-    wordBreak: 'break-all'
+    wordBreak: 'break-word',
+    lineHeight: '1.3'
   },
   category: {
     marginTop: '8px'
   },
   categoryBadge: {
     display: 'inline-block',
-    padding: '4px 12px',
-    borderRadius: '12px',
-    fontSize: '11px',
+    padding: '5px 12px',
+    borderRadius: '14px',
+    fontSize: '10px',
     fontWeight: '600',
     color: 'white',
-    textTransform: 'capitalize'
+    textTransform: 'capitalize',
+    letterSpacing: '0.3px'
   },
   noSession: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#9ca3af',
     textAlign: 'center',
-    marginBottom: '4px'
+    marginBottom: '6px'
   },
   noSessionText: {
     fontSize: '12px',
-    color: '#9ca3af',
+    color: '#6b7280',
     textAlign: 'center'
   },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-    marginBottom: '16px'
+    gap: '10px',
+    marginBottom: '10px'
   },
   statBox: {
-    background: 'white',
+    background: '#374151',
     borderRadius: '12px',
-    padding: '16px',
+    padding: '12px',
     textAlign: 'center',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    border: '1px solid #4b5563'
   },
   statValue: {
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#f9fafb',
     marginBottom: '4px'
   },
   statLabel: {
-    fontSize: '12px',
-    color: '#6b7280',
+    fontSize: '10px',
+    color: '#9ca3af',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.6px',
+    fontWeight: '600'
   },
   topDomainsSection: {
-    background: 'white',
+    background: '#374151',
     borderRadius: '12px',
-    padding: '16px',
-    marginBottom: '16px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    padding: '12px',
+    marginBottom: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    border: '1px solid #4b5563',
+    maxHeight: '150px',
+    overflowY: 'auto',
+    flex: '1 1 auto',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#4b5563 #374151'
   },
   sectionTitle: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#111827',
-    margin: '0 0 12px 0',
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#f9fafb',
+    margin: '0 0 10px 0',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.6px'
   },
   domainRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '8px 0',
-    borderBottom: '1px solid #f3f4f6'
+    padding: '6px 0',
+    borderBottom: '1px solid #4b5563',
+    '&:last-child': {
+      borderBottom: 'none'
+    }
   },
   domainInfo: {
     display: 'flex',
@@ -280,57 +303,68 @@ const styles = {
   },
   domainRank: {
     width: '20px',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 'bold',
-    color: '#9ca3af'
+    color: '#6b7280',
+    flexShrink: 0
   },
   domainName: {
-    fontSize: '13px',
-    color: '#374151',
+    fontSize: '12px',
+    color: '#d1d5db',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    fontWeight: '500'
   },
   domainTime: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#6b7280',
-    marginLeft: '8px'
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#9ca3af',
+    marginLeft: '12px',
+    flexShrink: 0
   },
   footer: {
     display: 'flex',
     gap: '8px',
-    marginBottom: '12px'
+    marginTop: 'auto',
+    paddingTop: '10px',
+    flexShrink: 0
   },
   dashboardButton: {
     flex: 1,
-    padding: '10px',
-    background: '#3b82f6',
+    padding: '10px 14px',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '13px',
+    borderRadius: '10px',
+    fontSize: '12px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background 0.2s'
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.5)',
+    letterSpacing: '0.3px'
   },
   clearButton: {
     flex: 1,
-    padding: '10px',
-    background: '#ef4444',
+    padding: '10px 14px',
+    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '13px',
+    borderRadius: '10px',
+    fontSize: '12px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background 0.2s'
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.5)',
+    letterSpacing: '0.3px'
   },
   deviceId: {
     textAlign: 'center',
-    fontSize: '10px',
-    color: '#9ca3af',
-    marginTop: '8px'
+    fontSize: '9px',
+    color: '#6b7280',
+    paddingTop: '8px',
+    fontWeight: '500',
+    flexShrink: 0
   }
 };
 

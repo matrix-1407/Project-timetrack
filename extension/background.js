@@ -326,6 +326,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'clearData') {
+    // Clear all data and reset current session
+    currentSession = null;
     chrome.storage.local.set({ sessions: [] }).then(() => {
       sendResponse({ success: true });
     });
