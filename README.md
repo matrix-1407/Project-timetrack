@@ -143,7 +143,9 @@ task4-timetrack/
 
 ## 📸 Output
 
-
+<img width="414" height="641" alt="Image" src="https://github.com/user-attachments/assets/7d45eb75-665d-44fd-b796-a1852c3c45ac" />
+<img width="850" height="740" alt="Image" src="https://github.com/user-attachments/assets/4466936e-1a74-4f01-acad-251f93ce0b48" />
+<img width="850" height="740" alt="Image" src="https://github.com/user-attachments/assets/a339f9ba-c9d8-4b14-a3a4-68d9ab55c8f7" />
 
 ---
 
