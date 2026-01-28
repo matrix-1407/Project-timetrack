@@ -257,6 +257,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (tab) {
     await startSession(tab);
   }
+  
+  // Set up periodic sync alarm
+  chrome.alarms.create('syncSessions', { periodInMinutes: 5 });
 });
 
 /**
@@ -267,13 +270,18 @@ chrome.runtime.onStartup.addListener(async () => {
   
   // Retrieve device ID
   const result = await chrome.storage.local.get(['deviceId']);
-  deviceId = result.deviceId;
+  if (result.deviceId) {
+    deviceId = result.deviceId;
+  }
   
   // Start tracking current active tab
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
     await startSession(tab);
   }
+  
+  // Set up periodic sync alarm (in case it wasn't created)
+  chrome.alarms.create('syncSessions', { periodInMinutes: 5 });
 });
 
 // ============================================
@@ -309,12 +317,24 @@ async function registerDevice(id) {
  */
 async function syncSessions() {
   try {
+    // Ensure deviceId is loaded
+    if (!deviceId) {
+      const result = await chrome.storage.local.get(['deviceId']);
+      deviceId = result.deviceId;
+      if (!deviceId) {
+        console.warn('No device ID available for sync');
+        return;
+      }
+    }
+
     const { sessions } = await chrome.storage.local.get(['sessions']);
     
     if (!sessions || sessions.length === 0) {
       console.log('No sessions to sync');
       return;
     }
+
+    console.log(`Syncing ${sessions.length} sessions to backend...`);
 
     const response = await fetch(`${API_BASE_URL}/sessions/batch`, {
       method: 'POST',
@@ -334,43 +354,28 @@ async function syncSessions() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log(`✅ Synced ${data.count} sessions`);
+      console.log(`✅ Synced ${data.count || sessions.length} sessions`);
       
       // Clear synced sessions from local storage
       await chrome.storage.local.set({ sessions: [] });
     } else {
-      console.warn('Session sync failed:', response.status);
+      const errorData = await response.text();
+      console.warn('Session sync failed:', response.status, errorData);
     }
   } catch (error) {
     console.error('Session sync error:', error);
   }
 }
 
-/**
- * Start periodic sync on extension startup
- */
-chrome.runtime.onInstalled.addListener(() => {
-  // Set up periodic sync
-  setInterval(async () => {
-    if (deviceId) {
-      await syncSessions();
-    }
-  }, SYNC_INTERVAL);
-});
 
-// Also start sync immediately on each startup
-chrome.runtime.onStartup.addListener(async () => {
-  if (deviceId) {
-    setTimeout(() => syncSessions(), 2000); // Wait 2 seconds for startup
+/**
+ * Handle periodic sync alarm
+ */
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'syncSessions') {
+    syncSessions();
   }
 });
-// TODO (Commit-3): Implement backend sync
-// chrome.alarms.create('syncToBackend', { periodInMinutes: 5 });
-// chrome.alarms.onAlarm.addListener((alarm) => {
-//   if (alarm.name === 'syncToBackend') {
-//     syncAllSessions();
-//   }
-// });
 
 // ============================================
 // Message Handler for Popup

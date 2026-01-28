@@ -9,6 +9,14 @@ import { pool } from '../db.js';
 const router = express.Router();
 
 /**
+ * Convert ISO datetime to MySQL format
+ */
+function toMySQLDateTime(isoString) {
+  if (!isoString) return null;
+  return new Date(isoString).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+/**
  * GET /api/analytics/:deviceId
  * Get comprehensive analytics for a device
  * Query params: ?days=7
@@ -19,7 +27,7 @@ router.get('/:deviceId', async (req, res) => {
     const { days = 7 } = req.query;
 
     const connection = await pool.getConnection();
-    const dateFilter = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const dateFilter = toMySQLDateTime(new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
 
     // Top domains by time spent
     const [topDomains] = await connection.query(

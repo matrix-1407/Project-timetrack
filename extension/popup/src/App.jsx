@@ -7,13 +7,29 @@ import React, { useState, useEffect } from 'react';
 function App() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch stats from background script
   useEffect(() => {
-    chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
-      setStats(response);
+    try {
+      chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Message error:', chrome.runtime.lastError);
+          setError('Extension error. Try reloading.');
+          setLoading(false);
+          return;
+        }
+        if (response) {
+          setStats(response);
+        } else {
+          setError('No response from background');
+        }
+        setLoading(false);
+      });
+    } catch (err) {
+      setError(err.message);
       setLoading(false);
-    });
+    }
   }, []);
 
   // Format seconds to readable time
@@ -42,6 +58,38 @@ function App() {
     return (
       <div style={styles.container}>
         <div style={styles.loading}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>⏱️ TimeTrack</h1>
+        </div>
+        <div style={styles.card}>
+          <div style={styles.errorText}>{error}</div>
+          <button 
+            style={styles.button}
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>⏱️ TimeTrack</h1>
+        </div>
+        <div style={styles.card}>
+          <div style={styles.errorText}>No stats available</div>
+        </div>
       </div>
     );
   }
@@ -365,6 +413,24 @@ const styles = {
     paddingTop: '8px',
     fontWeight: '500',
     flexShrink: 0
+  },
+  errorText: {
+    textAlign: 'center',
+    color: '#ef4444',
+    fontSize: '14px',
+    marginBottom: '12px'
+  },
+  button: {
+    display: 'block',
+    width: '100%',
+    padding: '10px',
+    background: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer'
   }
 };
 
