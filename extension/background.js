@@ -130,8 +130,10 @@ async function saveSession(session) {
     
     console.log('Session saved. Total sessions:', trimmedSessions.length);
     
-    // TODO (Commit-3): Sync to backend
-    // syncToBackend(session);
+    // Auto-sync if we have many sessions (20+)
+    if (trimmedSessions.length >= 20) {
+      await syncSessions();
+    }
   } catch (error) {
     console.error('Error saving session:', error);
   }
@@ -246,8 +248,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await chrome.storage.local.set({ deviceId: deviceId });
     console.log('New device ID generated:', deviceId);
     
-    // TODO (Commit-3): Register device with backend
-    // registerDevice(deviceId);
+    // Register device with backend
+    registerDevice(deviceId);
   }
   
   // Start tracking current active tab
@@ -278,6 +280,90 @@ chrome.runtime.onStartup.addListener(async () => {
 // Periodic Sync (every 5 minutes)
 // ============================================
 
+const API_BASE_URL = 'http://localhost:5000/api';
+const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Register device with backend
+ */
+async function registerDevice(id) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/devices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: id })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Device registered:', id);
+    } else {
+      console.warn('Device registration failed:', response.status);
+    }
+  } catch (error) {
+    console.error('Device registration error:', error);
+  }
+}
+
+/**
+ * Sync sessions with backend
+ */
+async function syncSessions() {
+  try {
+    const { sessions } = await chrome.storage.local.get(['sessions']);
+    
+    if (!sessions || sessions.length === 0) {
+      console.log('No sessions to sync');
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/sessions/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deviceId: deviceId,
+        sessions: sessions.map(s => ({
+          domain: s.domain,
+          url: s.url,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          durationSeconds: s.durationSeconds,
+          category: s.category
+        }))
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`✅ Synced ${data.count} sessions`);
+      
+      // Clear synced sessions from local storage
+      await chrome.storage.local.set({ sessions: [] });
+    } else {
+      console.warn('Session sync failed:', response.status);
+    }
+  } catch (error) {
+    console.error('Session sync error:', error);
+  }
+}
+
+/**
+ * Start periodic sync on extension startup
+ */
+chrome.runtime.onInstalled.addListener(() => {
+  // Set up periodic sync
+  setInterval(async () => {
+    if (deviceId) {
+      await syncSessions();
+    }
+  }, SYNC_INTERVAL);
+});
+
+// Also start sync immediately on each startup
+chrome.runtime.onStartup.addListener(async () => {
+  if (deviceId) {
+    setTimeout(() => syncSessions(), 2000); // Wait 2 seconds for startup
+  }
+});
 // TODO (Commit-3): Implement backend sync
 // chrome.alarms.create('syncToBackend', { periodInMinutes: 5 });
 // chrome.alarms.onAlarm.addListener((alarm) => {
