@@ -10,6 +10,14 @@ import { pool } from '../db.js';
 const router = express.Router();
 
 /**
+ * Convert ISO datetime to MySQL format
+ */
+function toMySQLDateTime(isoString) {
+  if (!isoString) return null;
+  return new Date(isoString).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+/**
  * POST /api/sessions/batch
  * Save multiple sessions at once (for sync)
  * Body: { deviceId, sessions: [...] }
@@ -34,8 +42,8 @@ router.post('/batch', async (req, res) => {
           deviceId,
           session.domain,
           session.url || null,
-          session.startTime,
-          session.endTime || null,
+          toMySQLDateTime(session.startTime),
+          toMySQLDateTime(session.endTime),
           session.durationSeconds || 0,
           session.category || 'neutral'
         ]
@@ -75,8 +83,8 @@ router.post('/', async (req, res) => {
         deviceId,
         domain,
         url || null,
-        startTime,
-        endTime || null,
+        toMySQLDateTime(startTime),
+        toMySQLDateTime(endTime),
         durationSeconds || 0,
         category || 'neutral'
       ]
